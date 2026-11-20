@@ -1,0 +1,20 @@
+# Python temporary files
+__pycache__/
+*.pyc
+
+# Python virtual environments
+.venv/
+venv/
+
+# Local environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Local AI agent files
+.agents/
+
+# Editor and operating system files
+.vscode/
+.DS_Store
+Thumbs.db
