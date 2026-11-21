@@ -112,3 +112,17 @@ annual_fig = px.bar(
 )
 
 st.plotly_chart(annual_fig, width="stretch")  # Display the annual net income bar chart using Plotly    
+
+# CFO --> Our net income is increasing, but which quarters performed best? 
+# Rank all eight quarters from highest to lowest net income 
+# so we can investigate the differences.
+
+df = pd.DataFrame(data)  # Recreate the DataFrame to include all years and quarters
+
+ranked_quarters = df.sort_values(           #sort_values --> arrange the rows
+    by='Net Income', 
+    ascending=False
+    )                                   # Sort the DataFrame by Net Income in descending order
+
+st.subheader("Ranked Quarters by Net Income")       #Creates a section heading
+st.dataframe(ranked_quarters)  # Display the ranked quarters DataFrame
