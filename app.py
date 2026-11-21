@@ -126,3 +126,16 @@ ranked_quarters = df.sort_values(           #sort_values --> arrange the rows
 
 st.subheader("Ranked Quarters by Net Income")       #Creates a section heading
 st.dataframe(ranked_quarters)  # Display the ranked quarters DataFrame
+
+#Task 12 — Data Quality and Cleaning
+#Business scenario: Your bank's quarterly financial dataset contains missing income figures and duplicate records.
+
+#| Method               | Purpose |
+#| `df.isnull()`        | Identifies missing values |
+#| `df.duplicated()`    | Identifies duplicate rows |
+#| `df.drop_duplicates()`  | Removes duplicate rows |
+
+missing_values = df.isnull().sum()  # Count missing values in each column
+
+st.subheader("Financial Data Quality Check")
+st.write(missing_values)
