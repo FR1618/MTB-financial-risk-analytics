@@ -136,6 +136,10 @@ st.dataframe(ranked_quarters)  # Display the ranked quarters DataFrame
 #| `df.drop_duplicates()`  | Removes duplicate rows |
 
 missing_values = df.isnull().sum()  # Count missing values in each column
+duplicate_count = df.duplicated().sum()  # Count duplicate rows
 
 st.subheader("Financial Data Quality Check")
 st.write(missing_values)
+st.write("Duplicate Records:", duplicate_count)
+
+
