@@ -147,9 +147,27 @@ def show_mtb_sec_panel() -> None:
         df, checked_at = _cached_fetch(user_agent)
         validate_metrics(df)
     except (requests.RequestException, ValueError, TypeError) as exc:
-        st.error("SEC data could not be loaded or validated. Existing dashboard remains available.")
-        st.caption(f"Technical detail: {exc}")
-        return
+        try:
+            df = pd.read_csv("data/mtb_financial_backup.csv")
+
+            df["Period End"] = pd.to_datetime(df["Period End"])
+            df["Filed"] = pd.to_datetime(df["Filed"])
+            df["Value (USD millions)"] = pd.to_numeric(
+                df["Value (USD millions)"], errors="raise"
+            )
+
+            validate_metrics(df)
+            checked_at = "Unavailable — using saved backup"
+
+            st.warning(
+                "SEC connection unavailable. Showing saved financial data, "
+                "which may be outdated."
+            )
+
+        except (OSError, ValueError, TypeError, KeyError) as backup_error:
+            st.error("Both SEC data and backup recovery failed.")
+            st.caption(f"Backup error: {backup_error}"
+            return
 
     latest_period = df["Period End"].max().date().isoformat()
     latest_filing = df["Filed"].max().date().isoformat()
@@ -171,12 +189,5 @@ def show_mtb_sec_panel() -> None:
         hide_index=True,
         use_container_width=True,
     )
-    st.download_button(
-        "Download Validated SEC Financial Data (CSV)",
-        data=df.to_csv(index=False),
-        file_name="mtb_financial_backup.csv",                                                       
-        mime="text/csv"
-    )
     st.caption(f"Source: {SEC_URL}. Some quarters or specialized CRE measures may be unavailable in this API.")
     st.caption(f"SEC API documentation: {SOURCE_PAGE}")
-
