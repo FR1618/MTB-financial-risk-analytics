@@ -166,9 +166,9 @@ def show_mtb_sec_panel() -> None:
 
         except (OSError, ValueError, TypeError, KeyError) as backup_error:
             st.error("Both SEC data and backup recovery failed.")
-            st.caption(f"Backup error: {backup_error}"
+            st.caption(f"Backup error: {backup_error}")
             return
-
+s
     latest_period = df["Period End"].max().date().isoformat()
     latest_filing = df["Filed"].max().date().isoformat()
     a, b, c = st.columns(3)
