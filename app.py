@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.express as px
+from credit_risk import risk_df 
 
 
 st.title("MT&T Bank Financial Analysis")
