@@ -1,6 +1,7 @@
 import streamlit as st
 import plotly.express as px
 from credit_risk import risk_df 
+from sec_live import show_mtb_sec_panel
 
 
 st.title("MT&T Bank Financial Analysis")
