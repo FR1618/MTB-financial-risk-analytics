@@ -171,5 +171,12 @@ def show_mtb_sec_panel() -> None:
         hide_index=True,
         use_container_width=True,
     )
+    st.download_button(
+        "Download Validated SEC Financial Data (CSV)",
+        data=df.to_csv(index=False),
+        file_name="mtc_financial_backup.csv"
+        mime="text/csv"
+    )
     st.caption(f"Source: {SEC_URL}. Some quarters or specialized CRE measures may be unavailable in this API.")
     st.caption(f"SEC API documentation: {SOURCE_PAGE}")
+
