@@ -155,3 +155,4 @@ st.write("Duplicates found in test DataFrame:", test_duplicates)
 st.write("Records before cleaning:", len(test_df))
 st.write("Records after cleaning:", len(clean_df))
 
+show_mtb_sec_panel() 
