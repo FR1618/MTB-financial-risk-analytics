@@ -1,82 +1,59 @@
+"""M&T Bank Q3 2026 reported credit-quality indicators.
+
+This is a fixed historical snapshot, NOT live credit-quality data.
+Source: https://ir.mtb.com/news-releases/news-release-details/mt-bank-corporation-nysemtb-announces-third-quarter-2026-results
+"""
+
 import pandas as pd
-import streamlit as st
-import plotly.express as px
 
-
-
-# M&T Bank reported financial data
-# Source: Q3 2026 Earnings Release
-# All amounts in USD millions
-
-risk_data = {
-    "Financial Indicator": [
-        "Net Income",
-        "Provision for Credit Losses",
-        "Nonaccrual Loans",
-        "Net Charget-offs"
-     ],
-     "Q3 2025": [792, 125, 1512, 146],
-     "Q2 2026": [818, 120, 1208, 80],
-     "Q3 2026": [775, 135, 1298, 127]
-}
-
-risk_df = pd.DataFrame(risk_data)
-
-# Calculate quarterly dollar change
-risk_df["QoQ Change ($M)"] = (
-    risk_df["Q3 2026"] - risk_df["Q2 2026"]
+EARNINGS_SOURCE = (
+    "https://ir.mtb.com/news-releases/news-release-details/"
+    "mt-bank-corporation-nysemtb-announces-third-quarter-2026-results"
+)
+CRE_PRESENTATION_SOURCE = (
+    "https://ir.mtb.com/static-files/5e370b06-317f-4dd2-a3e9-9bccff37b8bb"
 )
 
-# Calculate quarterly percentage change
-risk_df["QoQ Change (%)"] = (
-    risk_df["QoQ Change ($M)"] / risk_df["Q2 2026"] * 100
-).round(2)
-
-#Calculate year-over-year percentage change
-risk_df["YoY Change (%)"] = (
-    (risk_df["Q3 2026"] - risk_df["Q3 2025"])
-    / risk_df["Q3 2025"] * 100
-).round(2)  
-
-print(risk_df.to_string(index=False))
-
-# Identify potentially adverse financial changes
-def classify_risk(row):
-    indicators = row["Financial Indicator"]
-    change = row["QoQ Change ($M)"]
-
-    if indicators == "Net Income":
-        if change < -5:
-            return "Review Required"
-
-    else: 
-        if change > 10:
-            return "Review Required"
-
-    return "Stable"
-
-risk_df["Risk Classification"] = risk_df.apply(classify_risk, axis=1)
-
-st.divider()
-st.header("M&T Bank Credit Risk Analysis")
-
-st.dataframe(risk_df, hide_index=True)
-
-risk_alerts = risk_df[
-    risk_df["Risk Classification"] == "Review Required"
+# Reported amounts in USD millions; not forecasts or synthetic data.
+CREDIT_QUALITY = [
+    {"Indicator": "Net income", "Q3 2025": 792, "Q2 2026": 818, "Q3 2026": 775},
+    {"Indicator": "Provision for credit losses", "Q3 2025": 125, "Q2 2026": 120, "Q3 2026": 135},
+    {"Indicator": "Nonaccrual loans", "Q3 2025": 1512, "Q2 2026": 1208, "Q3 2026": 1298},
+    {"Indicator": "Net charge-offs", "Q3 2025": 146, "Q2 2026": 80, "Q3 2026": 127},
 ]
 
-st.metric("indicators Requiring Review", len(risk_alerts))
+# These amounts and percentages refer to C&I AND CRE combined, not CRE alone.
+CRITICIZED_CI_CRE = [
+    {"Quarter": "Q3 2025", "Criticized loans ($B)": 7.8, "Share of C&I + CRE loans (%)": 9.1},
+    {"Quarter": "Q4 2025", "Criticized loans ($B)": 7.3, "Share of C&I + CRE loans (%)": 8.4},
+    {"Quarter": "Q1 2026", "Criticized loans ($B)": 6.6, "Share of C&I + CRE loans (%)": 7.4},
+    {"Quarter": "Q2 2026", "Criticized loans ($B)": 5.9, "Share of C&I + CRE loans (%)": 6.5},
+    {"Quarter": "Q3 2026", "Criticized loans ($B)": 6.1, "Share of C&I + CRE loans (%)": 6.6},
+]
 
-st.subheader("Quarter-over-Quarter Risk indicators")
 
-fig_risk = px.bar(
-    risk_df,
-    x="Financial Indicator",
-    y="QoQ Change ($M)",
-    color="Risk Classification",
-    title="Quarter-over-Quarter Change in Financial Indicators",
-    labels={"QoQ Change ($M)": "Change in USD Millions"},           
-)
+def build_credit_quality_table() -> pd.DataFrame:
+    """Calculate reported quarter comparisons and illustrative monitoring flags."""
+    df = pd.DataFrame(CREDIT_QUALITY).copy()
+    for column in ("Q3 2025", "Q2 2026", "Q3 2026"):
+        df[column] = pd.to_numeric(df[column], errors="raise")
+        if (df[column] < 0).any():
+            raise ValueError(f"Negative amount in {column}")
 
-st.plotly_chart(fig_risk, use_container_width=True)
+    df["QoQ change ($M)"] = df["Q3 2026"] - df["Q2 2026"]
+    df["QoQ change (%)"] = (df["QoQ change ($M)"] / df["Q2 2026"] * 100).round(2)
+    df["YoY change (%)"] = (
+        (df["Q3 2026"] - df["Q3 2025"]) / df["Q3 2025"] * 100
+    ).round(2)
+
+    # Illustrative monitoring thresholds, NOT official bank credit-risk limits.
+    income_drop = (df["Indicator"] == "Net income") & (df["QoQ change (%)"] < -5)
+    other_increase = (df["Indicator"] != "Net income") & (df["QoQ change (%)"] > 10)
+    df["Monitoring flag"] = "Within illustrative threshold"
+    df.loc[income_drop | other_increase, "Monitoring flag"] = "Review movement"
+    return df
+
+
+def criticized_ci_cre_table() -> pd.DataFrame:
+    """Five-quarter combined C&I and CRE criticized-loan trends."""
+    return pd.DataFrame(CRITICIZED_CI_CRE).copy()
